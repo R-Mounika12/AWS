@@ -1,0 +1,29 @@
+version: 0.2
+
+env:
+  parameter-store:
+     DOCKER_CREADENTIALS_USERNAME: /myapp/docker-creadentails/username
+     DOCKER_CREADENTIALS_PASSWORD: /myapp/docker-creadentails/password
+     DOCKER_CREADENTIALS_URL: /myapp/docker-creadentails/url
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  pre_build:
+    commands:
+      - echo "Nothing to do in the pre_build phase..."
+  build:
+    commands:
+      - cd demo-application/
+      - echo Build started on `date`
+      - gradle build
+      - echo "Building Docker Image"
+      - echo "$DOCKER_CREADENTIALS_PASSWORD" | docker login -u "$DOCKER_CREADENTIALS_USERNAME" --password-stdin "$DOCKER_CREADENTIALS_URL"
+      - docker build -t "$DOCKER_CREADENTIALS_URL/$DOCKER_CREADENTIALS_USERNAME/spring-boot-application:v1" .
+      - docker push "$DOCKER_CREADENTIALS_URL/$DOCKER_CREADENTIALS_USERNAME/spring-boot-application:v1"
+  post_build:
+    commands:
+      - echo "Build is successfull"
+# artifacts:
+#   files:
+#     - build/libs/demo-application-0.0.1-SNAPSHOT.jar
